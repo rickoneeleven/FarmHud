@@ -1,7 +1,7 @@
 
 local addon,ns=...;
 local L=ns.L;
-ns.debugMode = "@project-version@"=="@".."project-version".."@";
+ns.debugMode = "9.3.0-release"=="@".."project-version".."@";
 LibStub("HizurosSharedTools").RegisterPrint(ns,addon,"FH");
 
 local ACD = LibStub("AceConfigDialog-3.0");
@@ -990,7 +990,7 @@ function FarmHudMixin:ToggleOptions()
 		ACD:Close(addon);
 	else
 		ACD:Open(addon);
-		ACD.OpenFrames[addon]:SetStatusText(GAME_VERSION_LABEL..CHAT_HEADER_SUFFIX.."@project-version@");
+		ACD.OpenFrames[addon]:SetStatusText(GAME_VERSION_LABEL..CHAT_HEADER_SUFFIX.."9.3.0-release");
 	end
 end
 

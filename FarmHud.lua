@@ -1007,99 +1007,103 @@ function FarmHudMixin:RegisterModule(name,module)
 end
 
 function FarmHudMixin:OnEvent(event,...)
-	if event=="ADDON_LOADED" and addon==... then
-		ns.RegisterOptions();
-		ns.RegisterDataBroker();
-		if FarmHudDB.AddOnLoaded or IsShiftKeyDown() then
-			ns:print(L.AddOnLoaded);
-		end
-	elseif event=="PLAYER_LOGIN" then
-		self:SetFrameLevel(2);
+    if event=="ADDON_LOADED" and addon==... then
+        ns.RegisterOptions();
+        ns.RegisterDataBroker();
+        if FarmHudDB.AddOnLoaded or IsShiftKeyDown() then
+            ns:print(L.AddOnLoaded);
+        end
+    elseif event=="PLAYER_LOGIN" then
+        self:SetFrameLevel(2);
 
-		if (FarmHudDB.gathercircle_show) then
-			self.gatherCircle:Show();
-		end
-		if (FarmHudDB.healcircle_show) then
-			self.healCircle:Show();
-		end
+        if (FarmHudDB.gathercircle_show) then
+            self.gatherCircle:Show();
+        end
+        if (FarmHudDB.healcircle_show) then
+            self.healCircle:Show();
+        end
 
-		self.gatherCircle:SetVertexColor(unpack(FarmHudDB.gathercircle_color));
-		self.healCircle:SetVertexColor(unpack(FarmHudDB.healcircle_color));
+        self.gatherCircle:SetVertexColor(unpack(FarmHudDB.gathercircle_color));
+        self.healCircle:SetVertexColor(unpack(FarmHudDB.healcircle_color));
 
-		--local radius = Minimap:GetWidth() * 0.214;
-		for i, v in ipairs(self.TextFrame.cardinalPoints) do
-			local label = v:GetText();
-			v.NWSE = strlen(label)==1;
-			v.rot = (0.785398163 * (i-1));
-			v:SetText(L[label]);
-			v:SetTextColor(1.0,0.82,0);
-			if v.NWSE then
-				v:SetTextColor(unpack(FarmHudDB.cardinalpoints_color1));
-			else
-				v:SetTextColor(unpack(FarmHudDB.cardinalpoints_color2));
-			end
-		end
+        for i, v in ipairs(self.TextFrame.cardinalPoints) do
+            local label = v:GetText();
+            v.NWSE = strlen(label)==1;
+            v.rot = (0.785398163 * (i-1));
+            v:SetText(L[label]);
+            v:SetTextColor(1.0,0.82,0);
+            if v.NWSE then
+                v:SetTextColor(unpack(FarmHudDB.cardinalpoints_color1));
+            else
+                v:SetTextColor(unpack(FarmHudDB.cardinalpoints_color2));
+            end
+        end
 
-		if (FarmHudDB.coords_show) then
-			self.TextFrame.coords:Show();
-		end
+        if (FarmHudDB.coords_show) then
+            self.TextFrame.coords:Show();
+        end
 
-		self.TextFrame.coords:SetTextColor(unpack(FarmHudDB.coords_color));
+        self.TextFrame.coords:SetTextColor(unpack(FarmHudDB.coords_color));
 
-		self.TextFrame.time:SetTextColor(unpack(FarmHudDB.time_color));
+        self.TextFrame.time:SetTextColor(unpack(FarmHudDB.time_color));
 
-		if (FarmHudDB.buttons_show) then
-			self.onScreenButtons:Show();
-		end
-		self.onScreenButtons:SetAlpha(FarmHudDB.buttons_alpha);
+        if (FarmHudDB.buttons_show) then
+            self.onScreenButtons:Show();
+        end
+        self.onScreenButtons:SetAlpha(FarmHudDB.buttons_alpha);
 
-		self.TextFrame.mouseWarn:SetText(L.MouseOn);
-		self.TextFrame.mouseWarn:SetTextColor(unpack(FarmHudDB.mouseoverinfo_color));
+        self.TextFrame.mouseWarn:SetText(L.MouseOn);
+        self.TextFrame.mouseWarn:SetTextColor(unpack(FarmHudDB.mouseoverinfo_color));
 
-		if(LibStub.libs['LibHijackMinimap-1.0'])then
-			LibHijackMinimap = LibStub('LibHijackMinimap-1.0');
-			LibHijackMinimap:RegisterHijacker(addon,LibHijackMinimap_Token);
-		end
+        if(LibStub.libs['LibHijackMinimap-1.0'])then
+            LibHijackMinimap = LibStub('LibHijackMinimap-1.0');
+            LibHijackMinimap:RegisterHijacker(addon,LibHijackMinimap_Token);
+        end
 
-		if BasicMinimap and BasicMinimap.backdrop then
-			self:RegisterForeignAddOnObject(BasicMinimap.backdrop:GetParent(),"BasicMinimap");
-		end
+        if BasicMinimap and BasicMinimap.backdrop then
+            self:RegisterForeignAddOnObject(BasicMinimap.backdrop:GetParent(),"BasicMinimap");
+        end
 
-		checkOnKnownProblematicAddOns()
-	elseif event=="PLAYER_LOGOUT" and mps.rotation and rotationMode and rotationMode~=mps.rotation then
-		-- reset rotation on logout and reload if FarmHud was open
-		C_CVar.SetCVar("rotateMinimap", mps.rotation, "ROTATE_MINIMAP");
-	elseif event=="MODIFIER_STATE_CHANGED" and self:IsShown() then
-		local key, down = ...;
-		if not mouseOnKeybind and modifiers[FarmHudDB.holdKeyForMouseOn] and modifiers[FarmHudDB.holdKeyForMouseOn][key]==1 then
-			self:ToggleMouse(down==0);
-		end
-	elseif event=="PLAYER_ENTERING_WORLD" then
-		if FarmHudDB.hideInInstance then
-			if IsInInstance() and FarmHud:IsShown() then
-				self.hideInInstanceActive = true;
-				self:Hide() -- hide FarmHud in Instance
-			elseif self.hideInInstanceActive then
-				self.hideInInstanceActive = nil;
-				self:Show(); -- restore visibility on leaving instance
-			end
-		end
-	elseif event=="PLAYER_REGEN_DISABLED" and FarmHudDB.hideInCombat and FarmHud:IsShown() then
-		self.hideInCombatActive = true;
-		self:Hide() -- hide FarmHud in combat
-		return
-	elseif event=="PLAYER_REGEN_ENABLED" and FarmHudDB.hideInCombat and self.hideInCombatActive then
-		self.hideInCombatActive = nil;
-		self:Show(); -- restore visibility after combat
-		return;
-	end
-	if modEvents[event] then
-		for _,modName in pairs(modEvents[event])do
-			if ns.modules[modName] and ns.modules[modName][event] then
-				ns.modules[modName][event](...);
-			end
-		end
-	end
+        checkOnKnownProblematicAddOns()
+        
+        -- Auto-show HUD on login
+        C_Timer.After(1, function() 
+            self:Toggle(true)
+        end)
+    elseif event=="PLAYER_LOGOUT" and mps.rotation and rotationMode and rotationMode~=mps.rotation then
+        -- reset rotation on logout and reload if FarmHud was open
+        C_CVar.SetCVar("rotateMinimap", mps.rotation, "ROTATE_MINIMAP");
+    elseif event=="MODIFIER_STATE_CHANGED" and self:IsShown() then
+        local key, down = ...;
+        if not mouseOnKeybind and modifiers[FarmHudDB.holdKeyForMouseOn] and modifiers[FarmHudDB.holdKeyForMouseOn][key]==1 then
+            self:ToggleMouse(down==0);
+        end
+    elseif event=="PLAYER_ENTERING_WORLD" then
+        if FarmHudDB.hideInInstance then
+            if IsInInstance() and FarmHud:IsShown() then
+                self.hideInInstanceActive = true;
+                self:Hide() -- hide FarmHud in Instance
+            elseif self.hideInInstanceActive then
+                self.hideInInstanceActive = nil;
+                self:Show(); -- restore visibility on leaving instance
+            end
+        end
+    elseif event=="PLAYER_REGEN_DISABLED" and FarmHudDB.hideInCombat and FarmHud:IsShown() then
+        self.hideInCombatActive = true;
+        self:Hide() -- hide FarmHud in combat
+        return
+    elseif event=="PLAYER_REGEN_ENABLED" and FarmHudDB.hideInCombat and self.hideInCombatActive then
+        self.hideInCombatActive = nil;
+        self:Show(); -- restore visibility after combat
+        return;
+    end
+    if modEvents[event] then
+        for _,modName in pairs(modEvents[event])do
+            if ns.modules[modName] and ns.modules[modName][event] then
+                ns.modules[modName][event](...);
+            end
+        end
+    end
 end
 
 function FarmHudMixin:OnLoad()

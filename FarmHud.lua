@@ -1066,10 +1066,20 @@ function FarmHudMixin:OnEvent(event,...)
 
         checkOnKnownProblematicAddOns()
         
-        -- Auto-show HUD on login
-        C_Timer.After(1, function() 
-            self:Toggle(true)
+    -- Auto-show HUD and toggle minimap icons on login 
+    C_Timer.After(1, function() 
+        self:Toggle(true)
+        -- Add a second delay to toggle minimap icons
+        C_Timer.After(15, function()
+            if self:IsShown() then
+                -- Toggle minimap icon
+                FarmHudDB.MinimapIcon.hide = false
+                LibStub("LibDBIcon-1.0", true):Refresh(addon)
+                -- Force full option update
+                FarmHud:UpdateOptions("MinimapIcon")
+            end
         end)
+    end)
     elseif event=="PLAYER_LOGOUT" and mps.rotation and rotationMode and rotationMode~=mps.rotation then
         -- reset rotation on logout and reload if FarmHud was open
         C_CVar.SetCVar("rotateMinimap", mps.rotation, "ROTATE_MINIMAP");
